@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1788662424 source:/home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/Piece.cpp
+	"Piece.h"
+
+1788661928 /home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/Piece.h
+	<cstdint>
+
+1788662384 source:/home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/main.cpp
+	<iostream>
+	"Piece.h"
+
