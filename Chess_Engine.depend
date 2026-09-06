@@ -1,11 +1,30 @@
 # depslib dependency file v1.0
-1788662424 source:/home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/Piece.cpp
+1788698203 source:/home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/Piece.cpp
 	"Piece.h"
+	"Bitwise_Logic.h"
 
-1788661928 /home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/Piece.h
+1788698207 /home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/Piece.h
 	<cstdint>
 
-1788662384 source:/home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/main.cpp
+1788697178 source:/home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/main.cpp
 	<iostream>
+	"Piece.h"
+
+1788674234 /home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/Bitwise_Logic.h
+	<cstdint>
+
+1788688977 source:/home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/Bitwise_Logic.cpp
+	"Bitwise_Logic.h"
+
+1788685355 source:/home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/Test.cpp
+	<iostream>
+	"Piece.h"
+	"Bitwise_Logic.h"
+
+1788698327 source:/home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/output.cpp
+	"output.h"
+
+1788698296 /home/david-smolenaars/Projects/ICT206/Chess Engine/Source/Chess_Engine/output.h
+	<string>
 	"Piece.h"
 

@@ -12,17 +12,47 @@ enum PieceType : uint16_t {
     KING = 6
 };
 
+enum RANK : uint16_t {
+    A = 0, B = 1, C = 2,
+    D = 3, E = 4, F = 5,
+    G = 6, H = 7
+};
+
+struct positionRF {
+    uint16_t rank;
+    uint16_t file;
+};
+
+// in-play flag functions.
 bool inPlay(const Piece _piece);
+void setPlay(Piece &_piece, bool _is_playing);
 
-bool isWhite(Piece _piece);
+// Color functions
+bool isWhite(const Piece _piece);
+void setWhite(Piece &_piece, bool _is_white);
 
-uint16_t retPosition(PieceType _piece);
-void setPositionRF(const uint16_t _rank, const uint16_t _file);
-void setPositionI(const uint16_t _index);
+// Position functions.
+uint16_t retPosition(const Piece _piece);
+positionRF retPositionRF(const Piece _piece);
+void setPositionRF(const uint16_t _rank, const uint16_t _file, Piece& _piece);
+void setPositionI(const uint16_t _index, Piece& _piece);
 
-uint16_t retType(PieceType _piece);
-void setType(const PieceType _type);
+// Type functions.
+PieceType retType(const Piece _piece);
+void setType(const PieceType _type, Piece& _piece);
 
-Piece initPiece(PieceType _piece);
+// ID functions.
+uint16_t retID(const Piece _piece);
+void setID(const uint16_t _id, Piece& _piece);
+
+// Has-moved flag functions.
+bool hasMoved(const Piece _piece);
+void setMoved(Piece& _piece, bool _has_moved);
+
+// Piece initialization functions.
+Piece initPiece(const uint16_t _rank, const uint16_t _file,
+                PieceType _type, bool _white, bool _in_play,
+                const uint16_t _id);
+void initPieceArr(Piece (&_arr)[32]);
 
 #endif // PIECE_H_INCLUDED
