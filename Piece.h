@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include "Constants.h"
+
 using Piece = uint16_t; // Alias for uint16_t. Makes the code
                         // nicer to read.
 
@@ -12,10 +14,14 @@ enum PieceType : uint16_t {
     KING = 6
 };
 
-enum RANK : uint16_t {
+enum File : uint16_t {
     A = 0, B = 1, C = 2,
     D = 3, E = 4, F = 5,
     G = 6, H = 7
+};
+
+enum color : bool {
+    BLACK = 0, WHITE = 1
 };
 
 struct positionRF {
@@ -37,6 +43,12 @@ positionRF retPositionRF(const Piece _piece);
 void setPositionRF(const uint16_t _rank, const uint16_t _file, Piece& _piece);
 void setPositionI(const uint16_t _index, Piece& _piece);
 
+// Turns the passed RF to a index.
+uint16_t RFToIndex(const positionRF _pos);
+
+// Turns the passed index into a RF.
+positionRF IndexToRF(const uint16_t _index);
+
 // Type functions.
 PieceType retType(const Piece _piece);
 void setType(const PieceType _type, Piece& _piece);
@@ -53,6 +65,6 @@ void setMoved(Piece& _piece, bool _has_moved);
 Piece initPiece(const uint16_t _rank, const uint16_t _file,
                 PieceType _type, bool _white, bool _in_play,
                 const uint16_t _id);
-void initPieceArr(Piece (&_arr)[32]);
+void initPieceArr(Piece (&_arr)[Constants::NO_PIECES]);
 
 #endif // PIECE_H_INCLUDED
