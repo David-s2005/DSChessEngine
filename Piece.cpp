@@ -16,6 +16,9 @@ bool isWhite(const Piece _piece) {
     return retSequence(_piece, Constants::COLOR_BIT, 1);
 }
 
+// NOTE TO SELF: Consider removing this function, there isn't really
+// a reason to set color, it doesn't change throughout the game.
+// and the initializer does setWhite's job at init anyways.
 // Sets the white flag to the value passed (_is_white).
 void setWhite(Piece &_piece, bool _is_white) {
     setSequence(_piece, Constants::COLOR_BIT, 1, _is_white);
@@ -101,36 +104,37 @@ Piece initPiece(const uint16_t _rank, const uint16_t _file,
 
 // Initializes all chess pieces in the piece array.
 void initPieceArr(Piece (&_arr)[Constants::NO_PIECES]) {
-    for (int i = 0; i < 2; i++) {
+    for(int i = 0; i < 2; i++) {
         bool white = (i == 1); // 2nd iteration is for white pieces.
         // back rank for white and black respectively.
         uint16_t backRank = white ? 0 : Constants::BOARD_SIDE_LEN - 1;
-        uint16_t pawnRank = white ? Constants::WHITE_PAWN_START_RANK
-                                  : Constants::BLACK_PAWN_START_RANK;
+        uint16_t pawnRank = white ? Constants::WHITE_PAWN_START_RANK :
+                                    Constants::BLACK_PAWN_START_RANK;
+
 
         for (uint16_t id = 0; id < Constants::NO_PIECES / 2; id++) {
             PieceType type;
             uint16_t rank = backRank;
             uint16_t file;
 
-            if (id <= 7) {
+            if(id <= 7) {
                 type = PAWN;
                 rank = pawnRank;
                 file = id;
             }
-            else if (id <= 9) {
+            else if(id <= 9) {
                 type = ROOK;
                 file = (id == 8) ? A : H;
             }
-            else if (id <= 11) {
+            else if(id <= 11) {
                 type = KNIGHT;
                 file = (id == 10) ? B : G;
             }
-            else if (id <= 13) {
+            else if(id <= 13) {
                 type = BISHOP;
                 file = (id == 12) ? C : F;
             }
-            else if (id == 14) {
+            else if(id == 14) {
                 type = QUEEN;
                 file = D;
             }

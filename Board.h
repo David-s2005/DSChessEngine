@@ -25,4 +25,6 @@ struct Board {
 // each of the pieces indexes to the boards lookup map.
 void updateLookupMap(Board &_board);
 
+void showBoard(const Board &_board);
+
 #endif // BOARD_H_INCLUDED

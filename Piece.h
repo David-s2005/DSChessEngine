@@ -2,6 +2,10 @@
 #define PIECE_H_INCLUDED
 
 #include <cstdint>
+#include <iostream>
+
+using std::cout; // COMMENT OUT
+using std::endl; // COMMENT OUT
 
 #include "Constants.h"
 
@@ -43,10 +47,8 @@ positionRF retPositionRF(const Piece _piece);
 void setPositionRF(const uint16_t _rank, const uint16_t _file, Piece& _piece);
 void setPositionI(const uint16_t _index, Piece& _piece);
 
-// Turns the passed RF to a index.
+// RF / index conversion functions.
 uint16_t RFToIndex(const positionRF _pos);
-
-// Turns the passed index into a RF.
 positionRF IndexToRF(const uint16_t _index);
 
 // Type functions.
@@ -65,6 +67,7 @@ void setMoved(Piece& _piece, bool _has_moved);
 Piece initPiece(const uint16_t _rank, const uint16_t _file,
                 PieceType _type, bool _white, bool _in_play,
                 const uint16_t _id);
+
 void initPieceArr(Piece (&_arr)[Constants::NO_PIECES]);
 
 #endif // PIECE_H_INCLUDED

@@ -64,15 +64,22 @@
 		</Compiler>
 		<Unit filename="Bitwise_Logic.cpp" />
 		<Unit filename="Bitwise_Logic.h" />
+		<Unit filename="Board.cpp" />
+		<Unit filename="Board.h" />
+		<Unit filename="Constants.h" />
+		<Unit filename="Move_Generator.cpp" />
+		<Unit filename="Move_Generator.h" />
 		<Unit filename="Piece.cpp" />
 		<Unit filename="Piece.h" />
+		<Unit filename="Test.cpp">
+			<Option target="Test" />
+		</Unit>
 		<Unit filename="main.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="Test.cpp">
-			<Option target="Test" />
-		</Unit>
+		<Unit filename="output.cpp" />
+		<Unit filename="output.h" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

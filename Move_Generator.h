@@ -3,12 +3,20 @@
 
 #include "Board.h"
 
-bool canMoveHere(const Board &_board, positionRF _position);
+struct movement {
+    positionRF start;
+    positionRF end;
+};
 
-// Moves knight. _piece_index is the index of the thing we're trying to move.
-// _board is the board state. _moves is a array of what actions we can make here.
-// & total moves is the length of _moves.
+uint16_t canMoveHere(const Board &_board, const positionRF _position, bool _isWhite);
+
 void generateMovesKnight(uint16_t _piece_index, Board &_board,
-                positionRF (&_moves)[], uint16_t &_total_moves);
+                         movement (&_moves)[], uint16_t &_total_moves);
+
+void generateMovesKing(uint16_t _piece_index, Board &_board,
+                       movement (&_moves)[], uint16_t &_total_moves);
+
+void generateMovesBishop(uint16_t _piece_index, Board &_board,
+                          movement (&_moves)[], uint16_t &_total_moves);
 
 #endif // MOVE_GENERATOR_H_INCLUDED
