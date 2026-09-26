@@ -59,9 +59,9 @@ string RetFEN(const Board &_board, bool _white_turn) {
                         break;
 
                     case NONE:
-                        std::exit(EXIT_FAILURE);
-                        // This shouldn't occur at all. If so,
-                        // i've done something catastrophic.
+                        // Unreachable: the loop above already skips empty
+                        // tiles via the SENTINEL check.
+                        break;
                 }
             }
         }
@@ -87,4 +87,52 @@ string RetFEN(const Board &_board, bool _white_turn) {
     str += "1"; // Full-moves. Invalid stump.
 
     return str;
+}
+
+// FILE RANK to FILE RANK
+// Example of a valid input:
+// A2A4 <- White pawn double jump to A4
+movement readMove(const string &_str) {
+    positionRF start = {Constants::SENTINEL, Constants::SENTINEL};
+    positionRF end = {Constants::SENTINEL, Constants::SENTINEL};
+
+    // String is not 4 chars + new line.
+    if(_str.length() != 4) return {start, end};
+
+    // Read files.
+    for(int i = 0; i < 2; i++) {
+        char c = _str[2*i];
+
+        // Check if the file is within A-H (uppercase) or a-h (lowercase).
+        if((c >= 'A' && c <= 'H') ||
+           (c >= 'a' && c <= 'h'))
+       {
+            // 'A'/'a' should map to file 0, 'B'/'b' to 1, and so on.
+            uint16_t file = (c >= 'a') ? static_cast<uint16_t>(c - 'a')
+                                        : static_cast<uint16_t>(c - 'A');
+
+            if(2*i == 0) {
+                start.file = file;
+            }
+            else end.file = file;
+       }
+       else return {start, end};
+    }
+
+    for(int i = 0; i < 2; i++) {
+        // Selects chars 1 & 3 (ranks).
+        char c = _str[2*i + 1];
+        int val = c - '0';
+
+        // Check if val is within valid bounds.
+        if(val < 8 || val > 1) {
+            if(2*i + 1 == 1) {
+                start.rank = val - 1;
+            }
+            else end.rank = val - 1;
+        }
+        else return {start, end};
+    }
+
+    return {start, end};
 }

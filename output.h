@@ -6,8 +6,8 @@
 
 #include<string>
 using std::string;
-#include <cstdlib>
 
 string RetFEN(const Board &_board, bool _white_turn);
+movement readMove(const string &_str);
 
 #endif // OUTPUT_H_INCLUDED

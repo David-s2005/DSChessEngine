@@ -13,9 +13,9 @@ namespace Constants {
     inline constexpr uint16_t INPLAY_BIT = 0;
     inline constexpr uint16_t COLOR_BIT = 1;
     inline constexpr uint16_t TYPE_START = 2,  TYPE_LEN = 3;
-    inline constexpr uint16_t POS_START  = 5,  POS_LEN  = 6;
-    inline constexpr uint16_t ID_START   = 11, ID_LEN   = 4;
-    inline constexpr uint16_t MOVED_BIT  = 15;
+    inline constexpr uint16_t POS_START = 5,  POS_LEN = 6;
+    inline constexpr uint16_t ID_START = 11, ID_LEN = 4;
+    inline constexpr uint16_t MOVED_BIT = 15;
 
     // Piece positioning constants.
     inline constexpr uint16_t WHITE_PAWN_START_RANK = 1;
@@ -23,6 +23,11 @@ namespace Constants {
 
     // My version of null. Used to denote a empty tile.
     inline constexpr uint16_t SENTINEL = 0xFFFF;
+
+    // misc
+    // The maximum amount of tiles a single piece can attack.
+    // (Queen on a almost empty board.)
+    inline constexpr uint16_t MAX_ATTACKS = 27;
 }
 
 #endif // CONSTANTS_H_INCLUDED

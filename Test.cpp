@@ -190,7 +190,8 @@ bool test_19() {
 // initPieceArr skipped because it has been used multiple times at
 // this point.
 
-// updateLookupMap test.
+// updateLookupMap test. Occasionally fails because we dont initialize
+// all pieces.
 bool test_20() {
     Board b;
     positionRF pos = {A, 5};
@@ -211,7 +212,6 @@ bool test_21() {
     updateLookupMap(b);
 
     cout << "Test 21 Board: " << endl;
-
     showBoard(b);
 
     return true;
@@ -241,9 +241,257 @@ bool test_22() {
 
     updateLookupMap(b);
 
+    cout << "Test 22 Board: " << endl;
     showBoard(b);
 
     return true;
+}
+
+// King movement test
+bool test_23() {
+    movement movements[218]; // 218 moves possible in a single turn.
+    uint16_t NoMovements = 0;
+
+
+    Board b;
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    positionRF BlackKingPos = {7, E};
+    uint16_t index = b.indexMap[RFToIndex(BlackKingPos)];
+
+    generateMovesKing(index, b, movements, NoMovements);
+
+    return NoMovements == 0; // King cant move at the start
+}
+
+// Simple bishop move test.
+bool test_24() {
+    movement movements[218];
+    uint16_t NoMovements = 0;
+
+    Board b;
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    positionRF BlackBishopPos = {7, G}; // Black bishop.
+    uint16_t index = b.indexMap[RFToIndex(BlackBishopPos)];
+
+    generateMovesBishop(index, b, movements, NoMovements);
+
+    return NoMovements == 0; // Bishops can move at the start.
+}
+
+// Simple knight movement test.
+bool test_25() {
+    movement movements[218];
+    uint16_t NoMovements = 0;
+
+    Board b;
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    positionRF BlackBishopPos = {7, F}; // Black bishop.
+    uint16_t index = b.indexMap[RFToIndex(BlackBishopPos)];
+
+    generateMovesKnight(index, b, movements, NoMovements);
+
+    return NoMovements == 2; // All knights can have only 2 start moves.
+}
+
+// Simple pawn movement test.
+bool test_26() {
+    movement movements[218];
+    uint16_t NoMovements = 0;
+
+    Board b;
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    positionRF BlackPawnPos = {6, A}; // Black pawn.
+    uint16_t index = b.indexMap[RFToIndex(BlackPawnPos)];
+
+    generateMovesPawn(index, b, movements, NoMovements);
+
+    return NoMovements == 2; // All pawns can make 2 moves at the start.
+}
+
+// Rook movement test.
+bool test_27() {
+    movement movements[218];
+    uint16_t NoMovements = 0;
+
+    Board b;
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    positionRF BlackRookPos = {7, A}; // Queenside black rook.
+    uint16_t index = b.indexMap[RFToIndex(BlackRookPos)];
+
+    generateMovesRook(index, b, movements, NoMovements);
+
+    return NoMovements == 0;
+}
+
+// Queen movement test.
+bool test_28() {
+    movement movements[218];
+    uint16_t NoMovements = 0;
+
+    Board b;
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    positionRF BlackQueenPos = {7, D}; // Black queen.
+    uint16_t index = b.indexMap[RFToIndex(BlackQueenPos)];
+
+    generateMovesQueen(index, b, movements, NoMovements);
+
+    return NoMovements == 0;
+}
+
+bool test_29() {
+    movement movements[218];
+    uint16_t NoMovements = 0;
+
+    Board b;
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    positionRF blackPawnPos = {6, A};
+    uint16_t index = b.indexMap[RFToIndex(blackPawnPos)];
+
+    generateMovesPawn(index, b, movements, NoMovements);
+
+    movePiece(b, movements[0]);
+
+    cout << "Test 29 Board: " << endl;
+    showBoard(b);
+
+    return true; // visual validation.
+}
+
+// Pawn movement promotion test.
+bool test_30() {
+    Board b;
+    movement movements[218];
+    uint16_t NoMovements = 0;
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    movement move = {{6, A}, {1, A}};
+    movePiece(b, move);
+    uint16_t pieceIndex = b.indexMap[RFToIndex({1, A})];
+    Piece &queen = b.pieces[pieceIndex];
+
+    cout << "INDEX: " << pieceIndex << endl;
+
+    generateMovesPawn(pieceIndex, b, movements, NoMovements);
+
+    movePiece(b, movements[0]); // promote to queen.
+
+    return retType(queen) == QUEEN;
+}
+
+// Simple en passant test.
+bool test_32() {
+    Board b;
+    movement movements[218];
+    uint16_t NoMovements = 0;
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    positionRF blackPawnPos = {6, A};
+
+    generateMovesPawn(b.indexMap[RFToIndex(blackPawnPos)], b, movements, NoMovements);
+
+    movePiece(b, movements[1]); // Double jump advance.
+
+    cout << "Test 32 board: " << endl;
+    //showBoard(b);
+
+    return (b.EnPassantTarget.rank == 5 &&
+            b.EnPassantTarget.file == A);
+}
+
+// retPawnAttack test.
+bool test_33() {
+    Board b;
+    movement movements[2];
+    uint16_t NoMovements = 0;
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    positionRF whitePawnPos = {1, A};
+
+    retAttackPawn(b, whitePawnPos, movements);
+
+    //cout << "Movement 1 rank: " << movements[0].end.rank << endl;
+    //cout << "Movement 1 file: " << movements[0].end.file << endl;
+    //cout << "Movement 2 rank: " << movements[1].end.rank << endl;
+    //cout << "Movement 2 file: " << movements[1].end.file << endl;
+
+    return movements[1].end.rank == Constants::SENTINEL &&
+           movements[1].end.file == Constants::SENTINEL &&
+           movements[0].end.rank == 2 &&
+           movements[0].end.file == B;
+}
+
+// Simple retKingAttack test.
+// Visually validate by ensuring 3 sentinel tiles are detected.
+bool test_34() {
+    Board b;
+    movement movements[8];
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    positionRF whiteKingPos = {0, E};
+
+    retAttackKing(whiteKingPos, movements);
+
+    for(int i = 0; i < 8; i++) {
+        cout << "Rank: " << movements[i].end.rank << endl;
+        cout << "File: " << movements[i].end.file << endl;
+        cout << endl;
+    }
+
+    return true;
+}
+
+bool test_35() {
+    Board b;
+    movement movements[8];
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    positionRF whiteKingPos = {0, E};
+
+    bool attacked1 = isSquareAttacked(b, whiteKingPos, BLACK);
+
+    return attacked1 == false;
+}
+
+// Board setup test: white king and both white rooks on their starting
+// squares, nothing else on the board.
+bool test_36() {
+    Board b{};
+    for(uint16_t i = 0; i < Constants::NO_PIECES; i++) {
+        b.pieces[i] = initPiece(0, 0, NONE, true, false, i);
+    }
+
+    positionRF whiteKingPos = {0, E};
+    positionRF whiteQueensideRookPos = {0, A};
+    positionRF whiteKingsideRookPos = {0, H};
+
+    b.pieces[0] = initPiece(whiteKingPos.rank, whiteKingPos.file, KING, true, true, 0);
+    b.pieces[1] = initPiece(whiteQueensideRookPos.rank, whiteQueensideRookPos.file, ROOK, true, true, 1);
+    b.pieces[2] = initPiece(whiteKingsideRookPos.rank, whiteKingsideRookPos.file, ROOK, true, true, 2);
+
+    updateLookupMap(b);
+
+    return b.indexMap[RFToIndex(whiteKingPos)] == 0 &&
+           b.indexMap[RFToIndex(whiteQueensideRookPos)] == 1 &&
+           b.indexMap[RFToIndex(whiteKingsideRookPos)] == 2;
 }
 
 void runTest(const char *_name, bool _result) {
@@ -278,6 +526,19 @@ int main() {
     runTest("Test 20", test_20());
     runTest("Test 21", test_21());
     runTest("Test 22", test_22());
+    runTest("Test 23", test_23());
+    runTest("Test 24", test_24());
+    runTest("Test 25", test_25());
+    runTest("Test 26", test_26());
+    runTest("Test 27", test_27());
+    runTest("Test 28", test_28());
+    runTest("Test 29", test_29());
+    runTest("Test 30", test_30());
+    runTest("Test 32", test_32());
+    runTest("Test 33", test_33());
+    runTest("Test 34", test_34());
+    runTest("Test 35", test_35());
+    runTest("Test 36", test_36());
 
     return 0;
 }

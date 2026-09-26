@@ -6,19 +6,20 @@
 
 using lookupMap = uint16_t[Constants::NO_TILES];
 
-enum CastlingRights : uint16_t {
-    WHITE_KINGSIDE = 0, WHITE_QUEENSIDE = 1,
-    BLACK_KINGSIDE = 2, BLACK_QUEENSIDE = 3
-};
-
 struct Board {
     Piece pieces[Constants::NO_PIECES];
     lookupMap indexMap;
     color moving;
-    // 4 bit int that represents white & blacks kingside & queenside
-    // castling rights. Check documentation for more info.
-    CastlingRights CR;
+    bool CastlingRights[4];
     positionRF EnPassantTarget;
+
+    Board();
+};
+
+struct movement {
+    positionRF start;
+    positionRF end;
+    PieceType promotionType;
 };
 
 // Goes through the pieces within the _board structure, and appends

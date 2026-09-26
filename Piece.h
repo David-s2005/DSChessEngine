@@ -2,10 +2,6 @@
 #define PIECE_H_INCLUDED
 
 #include <cstdint>
-#include <iostream>
-
-using std::cout; // COMMENT OUT
-using std::endl; // COMMENT OUT
 
 #include "Constants.h"
 
