@@ -23,11 +23,25 @@ namespace Constants {
 
     // My version of null. Used to denote a empty tile.
     inline constexpr uint16_t SENTINEL = 0xFFFF;
+    inline constexpr int CHECKMATE_SCORE = -1000000;
 
     // misc
     // The maximum amount of tiles a single piece can attack.
     // (Queen on a almost empty board.)
     inline constexpr uint16_t MAX_ATTACKS = 27;
+
+    // Default to 4 if not specified.
+    inline uint16_t MAX_DEPTH = 4;
 }
+
+inline constexpr int materialValues[] = {
+        0, // None
+        1, // Pawn
+        3, // Knight
+        3, // Bishop
+        5, // Rook
+        9, // Queen
+        0  // King
+    };
 
 #endif // CONSTANTS_H_INCLUDED

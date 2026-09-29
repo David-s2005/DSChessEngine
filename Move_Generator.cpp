@@ -37,7 +37,7 @@ static constexpr int knightOffsets[8][2] = {
 
 // Places the possible moves a given knight can make from the position at
 // _piece_index into _moves.
-void generateMovesKnight(uint16_t _piece_index, Board &_board,
+void generateMovesKnight(uint16_t _piece_index, const Board &_board,
                          movement (&_moves)[], uint16_t &_total_moves)
 {
     Piece p = _board.pieces[_piece_index];
@@ -71,11 +71,8 @@ static constexpr int kingOffsets[8][2] = {
     {-1,-1}, {0,-1}, {1,-1}
 };
 
-// This needs more work. I need a way to determine if the king will be in check if it goes
-// into a certain tile. We also need to provide castling moves.
-
 // Virtually identical to how knight movement works. Offsets are the only difference.
-void generateMovesKing(uint16_t _piece_index, Board &_board,
+void generateMovesKing(uint16_t _piece_index, const Board &_board,
                        movement (&_moves)[], uint16_t &_total_moves)
 {
     Piece p = _board.pieces[_piece_index];
@@ -138,7 +135,7 @@ static constexpr int bishopOffsets[4][2] = {
     {-1, 1}, {1, 1}, {1, -1}, {-1, -1}
 };
 
-void generateMovesBishop(uint16_t _piece_index, Board &_board,
+void generateMovesBishop(uint16_t _piece_index, const Board &_board,
                          movement (&_moves)[], uint16_t &_total_moves)
 {
     Piece p = _board.pieces[_piece_index];
@@ -182,7 +179,7 @@ static constexpr int pawnOffsets[4][2] = {
     {2, 0} // double first move.
 };
 
-void generateMovesPawn(uint16_t _piece_index, Board &_board,
+void generateMovesPawn(uint16_t _piece_index, const Board &_board,
                   movement (&_moves)[], uint16_t &_total_moves)
 {
     Piece p = _board.pieces[_piece_index];
@@ -309,7 +306,7 @@ static constexpr int rookOffsets[4][2] = {
     {1, 0}, {-1, 0}, {0, 1}, {0, -1}
 };
 
-void generateMovesRook(uint16_t _piece_index, Board &_board,
+void generateMovesRook(uint16_t _piece_index, const Board &_board,
                        movement (&_moves)[], uint16_t &_total_moves)
 {
     Piece p = _board.pieces[_piece_index];
@@ -354,7 +351,7 @@ static constexpr int queenOffsets[8][2] = {
     {-1, 1}, {1, 1}, {1, -1}, {-1, -1} // Queen style offsets.
 };
 
-void generateMovesQueen(uint16_t _piece_index, Board &_board,
+void generateMovesQueen(uint16_t _piece_index, const Board &_board,
                        movement (&_moves)[], uint16_t &_total_moves)
 {
     Piece p = _board.pieces[_piece_index];
@@ -395,7 +392,7 @@ void generateMovesQueen(uint16_t _piece_index, Board &_board,
 }
 
 // Returns the attacked tiles a given pawn has.
-void retAttackPawn(Board &_board, positionRF _pawnPosition, movement (&_attacks)[2]) {
+void retAttackPawn(const Board &_board, positionRF _pawnPosition, movement (&_attacks)[2]) {
     Piece pawn = _board.pieces[_board.indexMap[RFToIndex(_pawnPosition)]];
     int rankSign = isWhite(pawn) ? 1 : -1;
 
@@ -437,7 +434,7 @@ void retAttackKing(positionRF _kingPos, movement (&_attacks)[8]) {
 
 // Loop through every piece of the attacking color and determine if any of the returned
 // movements end tiles are the same as _position.
-bool isSquareAttacked(Board &_board, positionRF _position, color _attacking_color) {
+bool isSquareAttacked(const Board &_board, positionRF _position, color _attacking_color) {
     bool attacked = false;
 
     for(int i = 0; i < Constants::NO_PIECES; i++) {
@@ -639,9 +636,18 @@ void movePiece(Board &_board, movement _move) {
     if(!newEnPassantTarget) {
         _board.EnPassantTarget = {Constants::SENTINEL, Constants::SENTINEL};
     }
+
     setMoved(moving_piece, true);
     updateLookupMap(_board);
+
+    // Always recompute: castling safety depends on whether e8/d8/c8 (or the
+    // white equivalents) are attacked, which can change from a move
+    // anywhere on the board that opens/closes a line to those squares -
+    // not just moves that touch rank 0/7 themselves. Must run after
+    // updateLookupMap/setMoved above, since canCastle reads both indexMap
+    // and hasMoved.
     updateCastlingRights(_board);
+
     _board.moving = static_cast<color>(!white);
 }
 
@@ -681,7 +687,7 @@ void updateCastlingRights(Board &_board) {
 
 // Helper function for updateCastlingRights. Validates that a castle can
 // occur given the parameters.
-bool canCastle(Board &_board, positionRF _kingPos, positionRF _rookPos,
+bool canCastle(const Board &_board, positionRF _kingPos, positionRF _rookPos,
                const positionRF *_emptySquares, int _noEmptySquares,
                const positionRF *_safeSquares, int _noSafeSquares,
                color _attackingColor)
@@ -720,7 +726,7 @@ bool canCastle(Board &_board, positionRF _kingPos, positionRF _rookPos,
 }
 
 // Finds the position of the king of the given color on _board.
-static positionRF findKingPos(const Board &_board, color _isWhite) {
+positionRF findKingPos(const Board &_board, color _isWhite) {
     positionRF kingPos = {Constants::SENTINEL, Constants::SENTINEL};
 
     for(int i = 0; i < Constants::NO_TILES; i++) {
@@ -735,7 +741,7 @@ static positionRF findKingPos(const Board &_board, color _isWhite) {
     return kingPos;
 }
 
-void generateMovesForSide(Board _board, color _isWhite, movement (&_moves)[],
+void generateMovesForSide(const Board &_board, color _isWhite, movement (&_moves)[],
                           uint16_t _total_moves, movement (&_legal_moves)[],
                           uint16_t &_total_legal_moves)
 {
@@ -825,7 +831,7 @@ void generateMovesForSide(Board _board, color _isWhite, movement (&_moves)[],
 // Wrapper around generateMovesForSide: hides the pseudo-legal scratch
 // buffer generateMovesForSide needs internally, and takes a plain bool
 // for which side to move instead of color.
-void generateLegalMoves(Board &_board, color _isWhite,
+void generateLegalMoves(const Board &_board, color _isWhite,
                         movement (&_moves)[], int &_total_moves)
 {
     movement pseudoLegalMoves[218];

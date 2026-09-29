@@ -67,10 +67,14 @@
 		<Unit filename="Board.cpp" />
 		<Unit filename="Board.h" />
 		<Unit filename="Constants.h" />
+		<Unit filename="Evaluation.cpp" />
+		<Unit filename="Evaluation.h" />
 		<Unit filename="Move_Generator.cpp" />
 		<Unit filename="Move_Generator.h" />
 		<Unit filename="Piece.cpp" />
 		<Unit filename="Piece.h" />
+		<Unit filename="Search.cpp" />
+		<Unit filename="Search.h" />
 		<Unit filename="Test.cpp">
 			<Option target="Test" />
 		</Unit>

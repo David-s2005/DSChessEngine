@@ -6,6 +6,7 @@
 #include "output.h"
 #include "Constants.h"
 #include "Move_Generator.h"
+#include "Evaluation.h"
 
 using std::cout;
 using std::endl;
@@ -474,7 +475,7 @@ bool test_35() {
 // Board setup test: white king and both white rooks on their starting
 // squares, nothing else on the board.
 bool test_36() {
-    Board b{};
+    Board b;
     for(uint16_t i = 0; i < Constants::NO_PIECES; i++) {
         b.pieces[i] = initPiece(0, 0, NONE, true, false, i);
     }
@@ -492,6 +493,24 @@ bool test_36() {
     return b.indexMap[RFToIndex(whiteKingPos)] == 0 &&
            b.indexMap[RFToIndex(whiteQueensideRookPos)] == 1 &&
            b.indexMap[RFToIndex(whiteKingsideRookPos)] == 2;
+}
+
+// Material evaluation test. Should return 0, no advantage on either side.
+bool test_37() {
+    Board b;
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    return materialEvaluation(b, WHITE) == 0;
+}
+
+// Mobility evaluation test. Should return 0.
+bool test_38() {
+    Board b;
+    initPieceArr(b.pieces);
+    updateLookupMap(b);
+
+    return mobilityEvaluation(b, WHITE) == 0;
 }
 
 void runTest(const char *_name, bool _result) {
@@ -539,6 +558,8 @@ int main() {
     runTest("Test 34", test_34());
     runTest("Test 35", test_35());
     runTest("Test 36", test_36());
+    runTest("Test 37", test_37());
+    runTest("Test 38", test_38());
 
     return 0;
 }

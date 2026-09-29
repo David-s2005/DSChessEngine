@@ -33,6 +33,9 @@ void updateLookupMap(Board &_board) {
 // standard orientation from white's perspective.
 void showBoard(const Board &_board) {
     for(int rank = Constants::BOARD_SIDE_LEN - 1; rank >= 0; rank--) {
+        // Rank label, padded to the same 3-char width as each square.
+        cout << " " << (rank + 1) << " ";
+
         for(int file = 0; file < Constants::BOARD_SIDE_LEN; file++) {
             uint16_t squareIndex = RFToIndex({static_cast<uint16_t>(rank), static_cast<uint16_t>(file)});
             uint16_t index = _board.indexMap[squareIndex];
@@ -59,5 +62,12 @@ void showBoard(const Board &_board) {
         }
         cout << endl;
     }
-    cout << endl;
+
+    // File labels along the bottom, aligned under each column (the leading
+    // 3 spaces match the rank label's width above).
+    cout << "   ";
+    for(int file = 0; file < Constants::BOARD_SIDE_LEN; file++) {
+        cout << " " << static_cast<char>('A' + file) << " ";
+    }
+    cout << endl << endl;
 }

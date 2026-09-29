@@ -95,9 +95,10 @@ string RetFEN(const Board &_board, bool _white_turn) {
 movement readMove(const string &_str) {
     positionRF start = {Constants::SENTINEL, Constants::SENTINEL};
     positionRF end = {Constants::SENTINEL, Constants::SENTINEL};
+    PieceType promotionType = NONE;
 
-    // String is not 4 chars + new line.
-    if(_str.length() != 4) return {start, end};
+    // String is not 4 chars.
+    if(_str.length() < 4 || _str.length() > 5) return {start, end};
 
     // Read files.
     for(int i = 0; i < 2; i++) {
@@ -134,5 +135,33 @@ movement readMove(const string &_str) {
         else return {start, end};
     }
 
-    return {start, end};
+    if(_str.length() == 5) {
+        if(_str[4] == 'q') promotionType = QUEEN;
+        if(_str[4] == 'r') promotionType = ROOK;
+        if(_str[4] == 'b') promotionType = BISHOP;
+        if(_str[4] == 'n') promotionType = KNIGHT;
+    }
+
+    return {start, end, promotionType};
+}
+
+// Converts a movement into UCI coordinate notation (e.g. "e2e4", or "e7e8q"
+// for a promotion). The reverse of readMove.
+string moveToStr(movement _move) {
+    string str;
+
+    str += static_cast<char>('a' + _move.start.file);
+    str += static_cast<char>('1' + _move.start.rank);
+    str += static_cast<char>('a' + _move.end.file);
+    str += static_cast<char>('1' + _move.end.rank);
+
+    switch(_move.promotionType) {
+        case QUEEN:  str += 'q'; break;
+        case ROOK:   str += 'r'; break;
+        case BISHOP: str += 'b'; break;
+        case KNIGHT: str += 'n'; break;
+        default: break; // NONE - not a promotion, nothing to append.
+    }
+
+    return str;
 }
