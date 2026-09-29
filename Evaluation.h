@@ -8,5 +8,6 @@
 int materialEvaluation(const Board &_board, color _color);
 int mobilityEvaluation(const Board &_board, color _color);
 float heuristic(const Board &_board, color _color);
+int positioningEvaluation(const Board &_board, color _color);
 
 #endif // EVALUATION_H_INCLUDED

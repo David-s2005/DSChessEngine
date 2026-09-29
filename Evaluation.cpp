@@ -40,10 +40,36 @@ int mobilityEvaluation(const Board &_board, color _color) {
     return (_color == WHITE) ? score : -score;
 }
 
+int positioningEvaluation(const Board &_board, color _color) {
+    int scoreWhite = 0;
+    int scoreBlack = 0;
+
+    for(int i = 0; i < Constants::NO_TILES; i++) {
+        int index = _board.indexMap[i];
+        if(index != Constants::SENTINEL) {
+            Piece p = _board.pieces[index];
+
+            if(inPlay(p) == true) {
+                PieceType type = retType(p);
+                color pieceColor = static_cast<color>(isWhite(p));
+                // Flip index horizontally if the piece is black.
+                int sq = pieceColor ? i : i ^ 56;
+
+                if(pieceColor == WHITE) scoreWhite += pieceSquareTable[type][sq];
+                else scoreBlack += pieceSquareTable[type][sq];
+            }
+        }
+    }
+
+    int score = scoreWhite - scoreBlack;
+    return (_color == WHITE) ? score : -score;
+}
+
 // returns a weighted score of all evaluating functions for a board.
 float heuristic(const Board &_board, color _color) {
     int mat = materialEvaluation(_board, _color);
     int mob = mobilityEvaluation(_board, _color);
+    int pos = positioningEvaluation(_board, _color);
 
-    return (mat * 0.75) + (mob * 0.25);
+    return (mat * 0.50) + (mob * 0.15) + (pos * 0.35);
 }
