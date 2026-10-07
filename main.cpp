@@ -13,13 +13,13 @@ using std::endl;
 
 /* TODO:
    Board Heuristics:
-   1) Piece square tables
-   2) Bishop pair bonus
-   3) Pawn structure:
-      Punish double pawns (2 on one file)
-      Punish single pawns (No pawns on adjacent files)
-      Reward passed pawns (Pawns that can reach the end)
-      Punish a thin pawn shield (pawns too close to the king)
+   1) [DONE] Piece square tables
+   2) [DONE] Bishop pair bonus
+   3) [DONE] Pawn structure:
+      [DONE] Punish double pawns (2 on one file)
+      [DONE] Punish single pawns (No pawns on adjacent files)
+      [DONE] Reward passed pawns (Pawns that can reach the end)
+      [DONE] Punish a bad pawn shield (pawns not protecting the king)
   4) Reward castling
   5) Reward rooks on open files (reward a touch less for semi open)
   6) Game phase blending
@@ -27,6 +27,7 @@ using std::endl;
   Search improvement:
   1) [DONE] Killer moves (Moves that triggered beta cutoff)
   2) [DONE] History heuristic (Main a list of frequently used movement patterns)
+  3) Quiscence search
 */
 
 int main() {

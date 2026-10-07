@@ -53,9 +53,8 @@ void generateMovesKnight(uint16_t _piece_index, const Board &_board,
         if(rank >= 0 && rank <= 7 && file >= 0 && file <= 7) {
             positionRF destination = {static_cast<uint16_t>(rank), static_cast<uint16_t>(file)};
 
-            // Bounds are already checked above, so OffBoard/OwnPiece can't
-            // occur here, but checking explicitly keeps this correct
-            // regardless of canMoveHere's exact codes.
+            // We've already checked for correct bounds, so just make sure the tile we are
+            // moving into is empty or creates a capture.
             MoveStatus moveStatus = canMoveHere(_board, destination, white);
             if(moveStatus == Empty || moveStatus == Capture) {
                 _moves[_total_moves] = {piecePos, destination};
@@ -79,10 +78,9 @@ void generateMovesKing(uint16_t _piece_index, const Board &_board,
     bool white = isWhite(p);
     positionRF piecePos = retPositionRF(p);
 
-    // isSquareAttacked needs to see through the king's own square, otherwise
-    // a slider (rook/bishop/queen) giving check along a line gets its ray
-    // blocked by the king it's actually attacking, hiding squares further
-    // back along that same line.
+    // If we are checked by a slider, we need to ensure the king cant retreat further into
+    // the attack ray / vector. We will get the full ray through boardWithoutKing and see
+    // if the king occupies any attacked tiles in that.
     Board boardWithoutKing = _board;
     boardWithoutKing.indexMap[RFToIndex(piecePos)] = Constants::SENTINEL;
 
@@ -144,24 +142,22 @@ void generateMovesBishop(uint16_t _piece_index, const Board &_board,
 
     // Loop through the 4 offsets
     for(int i = 0; i < 4; i++) {
-        // Each direction's ray starts fresh from the piece's own square.
         positionRF pieceAdvance = piecePos;
 
-        // Iterate through this offset until we find a piece we can attack,
-        // a tile occupied by another piece of the same color, or we've reached
-        // outside the bounds of the board.
+        // Shot each ray offset until we've struck a enemy piece, a friendly piece
+        // or outside of the board.
         while(true) {
             pieceAdvance.file += static_cast<uint16_t>(bishopOffsets[i][1]);
             pieceAdvance.rank += static_cast<uint16_t>(bishopOffsets[i][0]);
             MoveStatus moveStatus = canMoveHere(_board, pieceAdvance, white);
 
-            // Off the board, or blocked by our own piece. Stop the ray
-            // without recording this square either way.
+            // Out of bounds or friendly piece, dont record the last tile of
+            // this ray.
             if(moveStatus == OffBoard || moveStatus == OwnPiece) {
                 break;
             }
 
-            // Empty (record and keep sliding), or capture (record and stop).
+            // Empty or capture. Record the last tile of the ray.
             _moves[_total_moves] = {piecePos, pieceAdvance};
             _total_moves++;
 
@@ -184,8 +180,8 @@ void generateMovesPawn(uint16_t _piece_index, const Board &_board,
 {
     Piece p = _board.pieces[_piece_index];
     bool white = isWhite(p);
-    int rankSign = white ? 1 : -1;
-    positionRF piecePos = retPositionRF(p); // Original position
+    int rankSign = white ? 1 : -1; // Flip rank if black is playing.
+    positionRF piecePos = retPositionRF(p); // Original position.
     positionRF pieceAdvance = piecePos; // Typical 1 rank advance.
     positionRF capRight;
     positionRF capLeft;
@@ -283,9 +279,8 @@ void generateMovesPawn(uint16_t _piece_index, const Board &_board,
         _total_moves++;
     }
 
-    // Double jump first move. Both the square being jumped over and the
-    // landing square need to be empty, otherwise the pawn jumps over a
-    // blocking piece.
+    // Double jump first move. Check if we are leaping over anything
+    // before continuing.
     positionRF intermediate;
     intermediate.rank = piecePos.rank + rankSign * pawnOffsets[0][0];
     intermediate.file = piecePos.file + pawnOffsets[0][1];
@@ -531,9 +526,7 @@ void movePiece(Board &_board, movement _move) {
     bool newEnPassantTarget = false;
 
     if(_move.promotionType == NONE) {
-        // Ends with a piece, This will be a capture as generateMoves will only produce
-        // moves that end with captures of the opposite color, so no need to check if this
-        // end target is the correct color or not.
+        // Capture. Disable the target tiles piece.
         uint16_t captured_index = _board.indexMap[end_index];
         if(captured_index != Constants::SENTINEL) {
             Piece &capture_piece = _board.pieces[captured_index];
@@ -617,13 +610,11 @@ void movePiece(Board &_board, movement _move) {
 
         setPositionRF(end.rank, end.file, moving_piece);
     }
-    // Piece promotion. Only reposition/capture if this wasn't a same-square
-    // "promote in place" move (generateMovesPawn currently only ever
-    // produces those, but this stays correct if that ever changes to a
-    // real promoting advance/capture).
+    // Piece promotion.
     else {
         if(end.rank != start.rank || end.file != start.file) {
             uint16_t captured_index = _board.indexMap[end_index];
+            // Capture leads to promotion.
             if(captured_index != Constants::SENTINEL) {
                 Piece &capture_piece = _board.pieces[captured_index];
                 setPlay(capture_piece, false);
@@ -640,14 +631,11 @@ void movePiece(Board &_board, movement _move) {
     setMoved(moving_piece, true);
     updateLookupMap(_board);
 
-    // Always recompute: castling safety depends on whether e8/d8/c8 (or the
-    // white equivalents) are attacked, which can change from a move
-    // anywhere on the board that opens/closes a line to those squares -
-    // not just moves that touch rank 0/7 themselves. Must run after
-    // updateLookupMap/setMoved above, since canCastle reads both indexMap
-    // and hasMoved.
+    // No good heuristic for determining if we need to update castling rights or
+    // not. Recompute.
     updateCastlingRights(_board);
 
+    // Flip white. Next colors turn.
     _board.moving = static_cast<color>(!white);
 }
 
@@ -692,26 +680,24 @@ bool canCastle(const Board &_board, positionRF _kingPos, positionRF _rookPos,
                const positionRF *_safeSquares, int _noSafeSquares,
                color _attackingColor)
 {
-    // Explicitly check if king and rooks tiles are empty to prevent decoding
-    // a empty tile (segfault).
+    // Prevent segfault by checking if the starting positions of the king
+    // & rook are empty. Cant decode a empty tile, junk data.
     if(_board.indexMap[RFToIndex(_kingPos)] == Constants::SENTINEL ||
        _board.indexMap[RFToIndex(_rookPos)] == Constants::SENTINEL)
     {
         return false;
     }
 
-    // Has either piece moved yet? This check invalidates the need to check
-    // the color of the pieces. A opposite color rook in a correct castling
-    // position will produce a invalid castle as it needed to move to get\
-    // there in the first place.
+    // Has either piece moved yet? No need to check the colors of the pieces
+    // as a white king cant castle with a black rook because the black rook
+    // has moved, thus invalidating the move.
     if(hasMoved(_board.pieces[_board.indexMap[RFToIndex(_kingPos)]]) ||
        hasMoved(_board.pieces[_board.indexMap[RFToIndex(_rookPos)]]))
     {
         return false;
     }
 
-    // Iterate through each (what should be) empty tiles inbetween the castling king
-    // & rook.
+    // Run through what should be empty spaces between the rook and king.
     for(int i = 0; i < _noEmptySquares; i++) {
         if(_board.indexMap[RFToIndex(_emptySquares[i])] != Constants::SENTINEL) return false;
     }
@@ -797,10 +783,6 @@ void generateMovesForSide(const Board &_board, color _isWhite, movement (&_moves
     if(isSquareAttacked(testBoard, kingPos, static_cast<color>(!_isWhite)) == true) {
         for(int i = 0; i < _total_moves; i++) {
             movePiece(testBoard, _moves[i]);
-
-            // Re-find the king: if this move was the king itself, it's no
-            // longer on kingPos, so re-using the pre-move position here
-            // would check the wrong (now empty) square.
             positionRF newKingPos = findKingPos(testBoard, _isWhite);
 
             // This move takes the king out of check.
@@ -828,9 +810,7 @@ void generateMovesForSide(const Board &_board, color _isWhite, movement (&_moves
     }
 }
 
-// Wrapper around generateMovesForSide: hides the pseudo-legal scratch
-// buffer generateMovesForSide needs internally, and takes a plain bool
-// for which side to move instead of color.
+// Wrapper for generateMovesForSide.
 void generateLegalMoves(const Board &_board, color _isWhite,
                         movement (&_moves)[], int &_total_moves)
 {

@@ -30,8 +30,8 @@ namespace Constants {
     // (Queen on a almost empty board.)
     inline constexpr uint16_t MAX_ATTACKS = 27;
 
-    // Default to 4 if not specified.
-    inline uint16_t MAX_DEPTH = 4;
+    // Default to 5 if not specified.
+    inline uint16_t MAX_DEPTH = 5;
 }
 
 inline constexpr int materialValues[] = {
@@ -100,6 +100,23 @@ inline constexpr int pieceSquareTable[7][64] = {
      -10, -20, -20, -20, -20, -20, -20, -10,
       20,  20,   0,   0,   0,   0,  20,  20,
       20,  30,  10,   0,   0,  10,  30,  20 } // KING
+};
+
+// Bonus for a passed pawn, indexed by rank (white's perspective - mirror
+// with 7 - rank for black, same idea as pieceSquareTable's ^56 mirror but
+// there's no file component here). Grows sharply near promotion since a
+// pawn on rank 7 with nothing to stop it is nearly a second queen.
+// Index 0 (rank 1) and 7 (rank 8) are dead weight - a pawn can never
+// legally sit there.
+inline constexpr int passedPawnBonus[8] = {
+    0,  // rank 1 - unreachable
+    0,  // rank 2 - start rank
+    5,  // rank 3
+    10, // rank 4
+    20, // rank 5
+    35, // rank 6
+    60, // rank 7 - one step from queening
+    0   // rank 8 - unreachable (promotes, stops being a pawn)
 };
 
 #endif // CONSTANTS_H_INCLUDED

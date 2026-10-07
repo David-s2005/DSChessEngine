@@ -7,7 +7,6 @@
 #include<string>
 using std::string;
 
-string RetFEN(const Board &_board, bool _white_turn);
 movement readMove(const string &_str);
 string moveToStr(movement _move);
 

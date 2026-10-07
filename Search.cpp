@@ -8,15 +8,16 @@
 #include "Move_Generator.h"
 
 // We are using a vector because the depth is determined
-// at runtime, which typical c++ arrays cant accept
-// (they need compile time initialization).
+// at runtime.
 static std::vector<std::array<movement, 2>> killerMoves;
 
-// Stores a score for a movement from A->B. 4096 elements.
-// index / subscript: [movement.start][movement.end] -> score.
+// Stores a score for a movement. 4096 elements. Think of this
+// as a dictionary [startpos][endpos] is the key, score is the value.
 static int historyTable[Constants::NO_TILES][Constants::NO_TILES];
 
-// Deadline for the search currently in progress.
+// A bit of a gross global variable, but preferable over passing down
+// the deadline multiple functions. We need to see the remaining time
+// whilst searching, not before or after.
 static std::chrono::steady_clock::time_point searchDeadline;
 static bool searchHasDeadline = false;
 static bool searchAborted = false;
@@ -30,8 +31,10 @@ static bool deadlinePassed() {
     return false;
 }
 
+// Start search with a depth of 1, and get deeper and deeper until we've ran out of time.
 movement iterativeDeepening(const Board &_board, int _timeBudget, color _sideToMove) {
     searchHasDeadline = true;
+    // Deadline = now + time budget.
     searchDeadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(_timeBudget);
 
     int depth = 1;
@@ -70,23 +73,19 @@ movement iterativeDeepening(const Board &_board, int _timeBudget, color _sideToM
     return bestMove;
 }
 
-int timeBudget(int noMovesLeft, int timeLeft) {
-    if(noMovesLeft == -1) return timeLeft / 30;
-    else return timeLeft / noMovesLeft;
-}
-
-// Bottom up search of the game tree from _depth. Uses alpha-beta pruning to faster searching.
+// Bottom up search of the game tree from _depth. Negamax algorithm with alpha-beta pruning.
 int negamax(const Board &_board, color _sideToMove, int _depth, int _alpha, int _beta) {
     // We've ran out of time, return nothing as we haven't reached the bottom.
     if(deadlinePassed()) {
         return 0;
     }
 
-    // We've reached the bottom. Return the value of the board here.
+    // We've reached the bottom. Start propagating up.
     if(_depth == 0) {
         return heuristic(_board, _sideToMove);
     }
 
+    // Moves are the branches of this node.
     movement moves[218];
     int total = 0;
     generateLegalMoves(_board, _sideToMove, moves, total);
@@ -106,20 +105,17 @@ int negamax(const Board &_board, color _sideToMove, int _depth, int _alpha, int 
     for(int i = 0; i < total; i++) {
         Board copy = _board;
         movePiece(copy, moves[i]);
-        // Swap and negate the window for the opponent's turn: what's good
-        // for them is bad for us, so our alpha becomes their upper bound
-        // and vice versa.
+        // Chess is zero-sum (Whats good for us is equally bad for them). So negate the score.
+        // Pass the parents alpha as the child's beta and vice versa for the child's alpha.
         int score = -negamax(copy, static_cast<color>(!_sideToMove), _depth - 1, -_beta, -_alpha);
         if(score > best) best = score;
         if(best > _alpha) _alpha = best;
 
-        // Beta cutoff: the opponent already has a way to avoid this branch
-        // entirely (an earlier alternative at least this good for them), so
-        // nothing further down this branch can change their decision.
+        // Beta cutoff. The opponent (parent node) has a superior value so don't evaluate this path
+        // further. A optimal opponent will never choose this path as it has already found a route
+        // with a superior value for it.
         if(_alpha >= _beta) {
-            // Record our most recent killer move & bump this move's history
-            // score. Quiet moves only - captures are already well-ordered
-            // by MVV-LVA, so they don't need either signal.
+            // Record our most recent killer move & bump this move's history score.
             if(canMoveHere(_board, moves[i].end, _sideToMove) != Capture) {
                 killerMoves[_depth][1] = killerMoves[_depth][0];
                 killerMoves[_depth][0] = moves[i];
@@ -146,7 +142,7 @@ movement findBestMove(const Board &_board, color _sideToMove, int _depth) {
         movePiece(copy, moves[i]);
         int score = -negamax(copy, static_cast<color>(!_sideToMove), _depth - 1);
 
-        // We've bit the deadline, don't record the current score as it is useless.
+        // We've hit the deadline, don't record the current score as it is useless.
         if(searchAborted) break;
 
         if(score > bestScore) {
@@ -179,9 +175,7 @@ int appendKillerMoves(const Board &_board, movement (&_moves)[], int _total, int
         captureEnd++;
     }
 
-    // Try both killer slots for this depth, swapping each one (if it's
-    // actually present among the remaining moves) into place right after
-    // the captures, in order.
+    // Try both killer slots at this depth, swap if present.
     for(int k = 0; k < 2; k++) {
         movement killer = killerMoves[_depth][k];
 
@@ -204,7 +198,7 @@ int appendKillerMoves(const Board &_board, movement (&_moves)[], int _total, int
 }
 
 // Sorts _moves[_start.._total) in descending order by history score. Placed
-// after killer scores. (tail of MVV/LVA + killers).
+// after killer scores.
 void sortByHistory(movement (&_moves)[], int _start, int _total) {
     for(int i = _start + 1; i < _total; i++) {
         movement key = _moves[i];

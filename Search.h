@@ -19,7 +19,6 @@ void initKillerMoves();
 void updateHistory(movement _move, int _depth);
 int retHistoryScore(movement _move);
 void initHistory();
-int timeBudget(int noMovesLeft, int timeLeft);
 movement iterativeDeepening(const Board &_board, int _timeBudget, color _sideToMove);
 
 
